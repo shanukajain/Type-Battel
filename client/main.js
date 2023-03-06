@@ -1,3 +1,4 @@
+import baseURL from './public/scripts/baseURL';
 import './style.css'
 
 
@@ -18,7 +19,7 @@ document.querySelector('#navbar').innerHTML = `
       <img src="/images/helmet.png" alt="user-avatar">
     </div>
     <div id="nav-user-details">
-      <h4 style="color:white; margin-bottom: 3px;" >Guest</h4>
+      <h4 id="loggedname" style="color:white; margin-bottom: 3px;" >Guest</h4>
       <div id="nav-user-auth">
         <button id="nav-acc-btn">CREATE ACCOUNT</button>
         <button id="nav-login-btn">SIGN IN</button>
@@ -29,6 +30,21 @@ document.querySelector('#navbar').innerHTML = `
   </div>
 </nav>
 `
+
+let loggedname=localStorage.getItem("loggedname");
+
+if(loggedname){
+  document.getElementById("loggedname").innerText=loggedname;
+  document.getElementById("nav-acc-btn").classList.add("div-hide");
+  document.getElementById("nav-login-btn").innerText="LOG OUT";
+}else{
+  document.getElementById("loggedname").innerText="Guest";
+  document.getElementById("nav-acc-btn").classList.remove("div-hide");
+  document.getElementById("nav-login-btn").innerText="SIGN IN";
+}
+
+
+
 const latest_tbody=document.querySelector("#latest");
 const myscores_tbody=document.querySelector("#my-scores");
 const hof_tbody=document.querySelector("#hof");
@@ -87,9 +103,9 @@ function displayhof(arr) {
   });
 }
 
-let content=""
-//socket:-
-let socket = io("https://type-battle.onrender.com",{transports:["websocket"]});
+// let content=""
+// //socket:-
+// let socket = io("https://type-battle.onrender.com",{transports:["websocket"]});
 //friend join the room
 // socket.emit("user",{username,room});
 
@@ -113,7 +129,22 @@ create_account_btn.addEventListener("click",(e)=>{
 let signin_btn = document.getElementById("nav-login-btn")
 signin_btn.addEventListener("click",(e)=>{
   e.preventDefault();
-  window.location.href="/pages/login.html"
+  if(signin_btn.innerText=="SIGN IN"){
+    window.location.href="/pages/login.html"
+  }else{
+    let token=localStorage.getItem("token");
+    fetch(baseURL+"/api/user/logout",{
+      headers:{
+        "Authorization":`${token}`,
+        "Content-type": "application/json"
+      },
+    }); 
+    localStorage.removeItem("loggedname");
+    localStorage.removeItem("token");
+    localStorage.removeItem("loggedUser");
+    alert("Log out Succesfull");
+    window.location.href="index.html";
+  }
 })
 
 let logo_btn = document.querySelector(".nav-logo")
@@ -122,10 +153,16 @@ let logo_btn = document.querySelector(".nav-logo")
   window.location.href="./index.html"
  })
  
- // -----------------------------SOCKET WORKING----------------------------------//
+//  -----------------------------SOCKET WORKING----------------------------------//
+function connection(){
+  let socket = io("https://type-battle.onrender.com",{transports:["websocket"]});
+  return socket;
+}
+
 // function connection(){
-//   let socket = io("http://localhost:8080",{transports:["websocket"]});
+//   let socket = io("http://localhost:8080/",{transports:["websocket"]});
 //   return socket;
 // }
-// export default connection;
+
+export default connection;
 
